@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR" ng-app="app">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atividade AngularJS - Componentes</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body ng-controller="MainController" ng-cloak>
+
+  <!-- Cabeçalho: Menu Suspenso de idioma -->
+  <header class="topbar">
+    <h1>Loja Demo <small>AngularJS</small></h1>
+    <div class="topbar-actions">
+      <span class="cart-badge" title="Itens no carrinho">🛒 {{ cart.length }}</span>
+      <app-dropdown label="Idioma" options="languages" selected="language"
+                    on-select="changeLanguage(option)"></app-dropdown>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="welcome">
+      <h2>{{ texts[language].title }}</h2>
+      <p class="muted">{{ texts[language].subtitle }}</p>
+    </section>
+
+    <div class="layout">
+
+      <!-- 1) PAGINAÇÃO + MENU SUSPENSO (filtros) -->
+      <section class="card span-2">
+        <h2>Produtos</h2>
+        <div class="toolbar">
+          <input class="input" type="search" placeholder="Buscar produto..."
+                 ng-model="filters.search" ng-model-options="{ debounce: 200 }"
+                 ng-change="refreshList(true)">
+          <app-dropdown label="Categoria" options="categories" selected="filters.category"
+                        on-select="selectCategory(option)"></app-dropdown>
+          <app-dropdown label="Ordenar" options="sortOptions" selected="currentSort"
+                        on-select="onSortSelected(option)"></app-dropdown>
+        </div>
+
+        <p class="muted">{{ filteredProducts.length }} produto(s) encontrado(s)</p>
+
+        <div class="product-grid">
+          <article class="product" ng-repeat="product in pagedProducts track by product.id">
+            <span class="tag">{{ product.category }}</span>
+            <h3>{{ product.name | capitalize }}</h3>
+            <p>{{ product.description | truncate:60 }}</p>
+            <div class="product-footer">
+              <strong>{{ product.price | brl }}</strong>
+              <button type="button" class="btn btn-small" ng-click="addToCart(product)">Adicionar</button>
+            </div>
+          </article>
+        </div>
+        <p class="muted" ng-if="!pagedProducts.length">Nenhum produto encontrado.</p>
+
+        <app-pagination total-pages="totalPages" current-page="currentPage"
+                        on-page-change="changePage(page)"></app-pagination>
+      </section>
+
+      <!-- 2) BARRA DE PROGRESSO -->
+      <section class="card">
+        <h2>Upload de arquivo</h2>
+        <app-progress-bar value="upload.progress" label="relatorio-final.pdf"></app-progress-bar>
+        <div class="actions">
+          <button type="button" class="btn" ng-click="startUpload(false)" ng-disabled="upload.running">Simular upload</button>
+          <button type="button" class="btn btn-danger" ng-click="startUpload(true)" ng-disabled="upload.running">Simular erro</button>
+          <button type="button" class="btn btn-outline" ng-click="resetUpload()">Reiniciar</button>
+        </div>
+        <label class="range-label">Ajuste manual ({{ upload.progress | number:0 }}%)
+          <input type="range" min="0" max="100" ng-model="upload.progress"
+                 ng-change="onProgressChange()" ng-disabled="upload.running">
+        </label>
+      </section>
+
+      <!-- 3) ABAS -->
+      <section class="card">
+        <h2>Perfil do usuário</h2>
+        <app-tabs tabs="profileTabs" on-tab-change="onTabChange(tab)"></app-tabs>
+        <p class="muted">Aba ativa: {{ activeTabTitle }}</p>
+      </section>
+
+      <!-- 4) ACORDEÃO -->
+      <section class="card">
+        <h2>Perguntas frequentes</h2>
+        <label class="checkbox">
+          <input type="checkbox" ng-model="faqAllowMultiple"> Permitir vários itens abertos
+        </label>
+        <app-accordion items="faqItems" allow-multiple="faqAllowMultiple"></app-accordion>
+      </section>
+
+      <!-- 5) NOTIFICAÇÃO TOAST -->
+      <section class="card">
+        <h2>Notificações</h2>
+        <div class="toolbar">
+          <input class="input" type="text" placeholder="Mensagem da notificação" ng-model="toastForm.message">
+          <app-dropdown label="Tipo" options="toastTypes" selected="toastForm.type"
+                        on-select="toastForm.type = option.value"></app-dropdown>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" ng-click="showCustomToast()">Mostrar notificação</button>
+        </div>
+        <p class="muted">As notificações somem após 4 segundos ou ao clicar no ×.</p>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- 6) Container global das notificações Toast -->
+  <app-toast-container></app-toast-container>
+
+  <!-- AngularJS (única dependência externa) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <!-- Módulo principal (deve ser carregado primeiro) -->
+  <script src="js/app.js"></script>
+
+  <!-- Serviços / Factories -->
+  <script src="js/services/product.service.js"></script>
+  <script src="js/services/content.service.js"></script>
+  <script src="js/services/toast.service.js"></script>
+
+  <!-- Filtros -->
+  <script src="js/filters/format.filters.js"></script>
+
+  <!-- Diretivas (componentes) -->
+  <script src="js/directives/accordion.directive.js"></script>
+  <script src="js/directives/pagination.directive.js"></script>
+  <script src="js/directives/progress-bar.directive.js"></script>
+  <script src="js/directives/tabs.directive.js"></script>
+  <script src="js/directives/dropdown.directive.js"></script>
+  <script src="js/directives/toast-container.directive.js"></script>
+
+  <!-- Controladores -->
+  <script src="js/controllers/main.controller.js"></script>
+</body>
+</html>
